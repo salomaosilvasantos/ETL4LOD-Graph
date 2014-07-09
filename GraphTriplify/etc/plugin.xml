@@ -1,0 +1,14 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<plugin
+   id="GraphTriplifyPlugin"
+   iconfile="graphtriplify.png"
+   description="Graph Triplify"
+   tooltip="Experimental"
+   category="UFRJ_PPGI_GRECO"
+   classname="br.ufrj.ppgi.greco.trans.step.graphtriplify.GraphTriplifyStepMeta">
+   <libraries>
+		<library name="GraphTriplify.jar"/>
+		<library name="KettlePluginTools.jar"/>
+		<library name="jena-2.6.4.jar"/>
+	</libraries>
+</plugin>
