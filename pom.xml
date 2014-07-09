@@ -74,6 +74,7 @@
 
     <modules>
 		<module>SparqlEndpoint</module>
+		<module>GraphTriplify</module>
 		<!-- Modulos ainda nao migrados -->
         <!-- <module>DataPropertyMapping</module> -->
         <!-- <module>ntriplegenerator</module> -->
