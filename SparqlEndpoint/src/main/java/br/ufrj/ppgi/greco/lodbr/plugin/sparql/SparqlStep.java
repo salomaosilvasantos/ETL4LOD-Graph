@@ -22,14 +22,18 @@ import com.hp.hpl.jena.query.Query;
 import com.hp.hpl.jena.query.QueryException;
 import com.hp.hpl.jena.query.QueryExecution;
 import com.hp.hpl.jena.query.QueryFactory;
-import com.hp.hpl.jena.query.QuerySolution;
 import com.hp.hpl.jena.query.ResultSet;
-import com.hp.hpl.jena.rdf.model.Literal;
 import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.rdf.model.RDFNode;
-import com.hp.hpl.jena.rdf.model.Statement;
-import com.hp.hpl.jena.rdf.model.StmtIterator;
 
+/**
+ * Adaptacoes: <br />
+ * No output, em vez de passar campos separados, passar: <br />
+ * (i) um objeto Graph (SELECT, DESCRIBE, CONSTRUCT) ou <br />
+ * (ii) um objeto Boolean (ASK). <br />
+ * 
+ * @author rogers
+ * 
+ */
 public class SparqlStep extends BaseStep implements StepInterface
 {
 
@@ -60,7 +64,7 @@ public class SparqlStep extends BaseStep implements StepInterface
             // Executa apenas uma vez. Variavel first definida na superclasse
             first = false;
 
-            // Obtem todas as colunas at� o step anterior.
+            // Obtem todas as colunas ate o step anterior.
             // Chamar apenas apos chamar getRow()
             RowMetaInterface rowMeta = getInputRowMeta(row != null);
             data.outputRowMeta = rowMeta.clone();
@@ -154,7 +158,7 @@ public class SparqlStep extends BaseStep implements StepInterface
                         return true;
                     }
                     else
-                    { // Nao ha mais resultados, ie, processRow() nao ser�
+                    { // Nao ha mais resultados, ie, processRow() nao sera'
                       // chamado novamente
                         setOutputDone();
                         return false;
@@ -169,7 +173,7 @@ public class SparqlStep extends BaseStep implements StepInterface
             }
         }
 
-        // N�o funfou!
+        // Nao funfou!
         StringBuilder sb = new StringBuilder();
         sb.append("Todas as tentativas de executar a consulta falharam. ");
         sb.append("Verifique conexão de rede e o SPARQL Endpoint.\n");
@@ -232,62 +236,22 @@ public class SparqlStep extends BaseStep implements StepInterface
         }
     }
 
-    private int tripleWriter(Model model, Object[] row, SparqlStepData data)
-            throws KettleStepException
-    {
-        int numPutRows = 0;
-        StmtIterator it = model.listStatements();
-
-        while (it.hasNext())
-        {
-            Statement stmt = it.next();
-
-            incrementLinesInput();
-
-            String subject = stmt.getSubject().toString();
-            String predicate = stmt.getPredicate().toString();
-            String object = stmt.getObject().toString();
-
-            if (subject != null && !subject.isEmpty() && predicate != null
-                    && !predicate.isEmpty() && object != null)
-            {
-                // Monta linha com a tripla
-                Object[] outputRow = row;
-                outputRow = RowDataUtil.addValueData(outputRow,
-                        data.inputRowSize + 0, subject);
-                outputRow = RowDataUtil.addValueData(outputRow,
-                        data.inputRowSize + 1, predicate);
-                outputRow = RowDataUtil.addValueData(outputRow,
-                        data.inputRowSize + 2, object);
-
-                // Joga tripla no fluxo
-                putRow(data.outputRowMeta, outputRow);
-
-                numPutRows++;
-            }
-            else
-                logBasic("Tripla ignorada: " + stmt.getString());
-        }
-
-        return numPutRows;
-    }
-
     // Rogers(Nov/2012): Correcao de bug na ordenacao dos campos da consulta
     // SPARQL
     private int runQueryAndPutResults(Query query, SparqlStepMeta meta,
             SparqlStepData data, Object[] row) throws KettleStepException
     {
         int numPutRows = 0;
-        Model model = null;
         QueryExecution qexec = SparqlStepUtils.createQueryExecution(query,
                 meta.getEndpointUri(), meta.getDefaultGraph());
 
         try
         {
+            Model model = null;
             switch (query.getQueryType())
             {
                 case Query.QueryTypeAsk:
-                    boolean result = qexec.execAsk();
+                    Boolean result = qexec.execAsk();
                     incrementLinesInput();
                     putRow(data.outputRowMeta, RowDataUtil.addValueData(row,
                             data.inputRowSize, result));
@@ -295,59 +259,26 @@ public class SparqlStep extends BaseStep implements StepInterface
 
                 case Query.QueryTypeConstruct:
                     model = qexec.execConstruct();
-                    numPutRows = tripleWriter(model, row, data);
+                    incrementLinesInput();
+                    putRow(data.outputRowMeta, RowDataUtil.addValueData(row,
+                            data.inputRowSize, model));
                     break;
 
                 case Query.QueryTypeDescribe:
                     model = qexec.execDescribe();
-                    numPutRows = tripleWriter(model, row, data);
+                    incrementLinesInput();
+                    putRow(data.outputRowMeta, RowDataUtil.addValueData(row,
+                            data.inputRowSize, model));
                     break;
 
                 case Query.QueryTypeSelect:
                     ResultSet resultSet = qexec.execSelect();
-                    // Gera linhas
-                    while (resultSet.hasNext())
-                    {
-                        QuerySolution qs = resultSet.next();
-
-                        // Diz ao Kettle que leu mais uma linha da entrada
-                        incrementLinesInput();
-
-                        // Gera uma linha de saida do fluxo
-                        Object[] outputRow = row;
-                        String[] fieldNames = data.outputRowMeta
-                                .getFieldNames();
-                        int posAddValueData = (outputRow != null) ? outputRow.length
-                                : 0;
-                        for (int i = 0; i < fieldNames.length; i++)
-                        {
-                            // Retira o prefixo para obter o nome do campo da
-                            // consulta SPARQL
-                            String var = fieldNames[i].replaceAll(
-                                    meta.getVarPrefix(), "");
-
-                            // Obtem o node RDF
-                            RDFNode node = qs.get(var);
-
-                            // Obtem o valor do node RDF
-                            String value = null;
-                            if (node instanceof Literal)
-                            {
-                                value = qs.getLiteral(var).getString();
-                            }
-                            else
-                            {
-                                value = qs.getResource(var).getURI();
-                            }
-
-                            // Set output row
-                            outputRow = RowDataUtil.addValueData(outputRow,
-                                    posAddValueData++, value);
-                        }
-
-                        putRow(data.outputRowMeta, outputRow);
-                        numPutRows++;
-                    }
+                    model = resultSet.getResourceModel();                    
+                    
+                    Object extra = (model != null) ? model : resultSet;
+                    incrementLinesInput();
+                    putRow(data.outputRowMeta, RowDataUtil.addValueData(row,
+                            data.inputRowSize, extra));
                     break;
             }
         }

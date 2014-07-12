@@ -22,12 +22,10 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.List;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 import org.pentaho.di.core.Const;
-import org.pentaho.di.core.row.ValueMetaInterface;
 import org.pentaho.di.trans.TransMeta;
 import org.pentaho.di.trans.step.BaseStepMeta;
 import org.pentaho.di.trans.step.StepDialogInterface;
@@ -38,6 +36,15 @@ import org.pentaho.di.ui.trans.step.BaseStepDialog;
 
 import br.ufrj.ppgi.greco.kettle.plugin.tools.swthelper.SwtHelper;
 
+/**
+ * Adaptacoes: <br />
+ * Na aba "Campos de Saida": <br />
+ * - Exclusao dos campos: "Prefixos" e "Nomes dos campos" <br />
+ * - Inclusao do campo: "Resultado" <br />
+ * 
+ * @author rogers
+ * 
+ */
 public class SparqlStepDialog extends BaseStepDialog implements
         StepDialogInterface
 {
@@ -50,8 +57,6 @@ public class SparqlStepDialog extends BaseStepDialog implements
     private TextVar wEndpointUri;
     private TextVar wDefaultGraph;
     private Text wQueryString;
-    private TextVar wPrefixVar;
-    private List wList;
     private Text wParserMessage;
     private CTabFolder wTabFolder;
     private TableView wPrefixes;
@@ -67,6 +72,7 @@ public class SparqlStepDialog extends BaseStepDialog implements
             { "vcard", "http://www.w3.org/2006/vcard/ns#" },
             { "cc", "http://creativecommons.org/ns#" },
             { "skos", "http://www.w3.org/2004/02/skos/core#" } };
+    private TextVar wOutputResult;
 
     public SparqlStepDialog(Shell parent, Object stepMeta, TransMeta transMeta,
             String stepname)
@@ -78,7 +84,6 @@ public class SparqlStepDialog extends BaseStepDialog implements
 
         // TODO: Additional initialization here
         dialogTitle = "Sparql Endpoint";
-        // ...
     }
 
     // TODO Criar widgets especificos da janela
@@ -148,7 +153,6 @@ public class SparqlStepDialog extends BaseStepDialog implements
         wQueryString = swthlp.appendMultiTextVarRow(cpt, wLabel,
                 new ModifyListener()
                 {
-
                     @Override
                     public void modifyText(ModifyEvent arg0)
                     {
@@ -183,41 +187,9 @@ public class SparqlStepDialog extends BaseStepDialog implements
         item = new CTabItem(wTabFolder, SWT.NONE);
         item.setText("Campos de Saída");
         cpt = swthlp.appendComposite(wTabFolder, null);
-        wPrefixVar = swthlp.appendTextVarRow(cpt, null, "Prefixos:",
-                new ModifyListener()
-                {
 
-                    @Override
-                    public void modifyText(ModifyEvent arg0)
-                    {
-                        validateButton();
-                    }
-                });
-        wList = swthlp.appendListRow(cpt, wPrefixVar, "Nomes dos campos:",
-                new SelectionListener()
-                {
-                    @Override
-                    public void widgetSelected(SelectionEvent arg0)
-                    {
-                    }
-
-                    @Override
-                    public void widgetDefaultSelected(SelectionEvent arg0)
-                    {
-                    }
-                }, 50);
-        wList.setEnabled(false);
-
-        /*
-         * listeners = new SelectionListener[] { new SelectionListener() {
-         * 
-         * @Override public void widgetSelected(SelectionEvent arg0) {
-         * widgetDefaultSelected(arg0); }
-         * 
-         * @Override public void widgetDefaultSelected(SelectionEvent arg0) {
-         * validateButton(); } } }; ctl = swthlp.appendButtonsRow( cpt, wList,
-         * new String [] { "Refazer" }, listeners);
-         */
+        wOutputResult = swthlp.appendTextVarRow(cpt, null, "Resultado:",
+                defModListener);
         item.setControl(cpt);
 
         wTabFolder.setSelection(0);
@@ -228,7 +200,6 @@ public class SparqlStepDialog extends BaseStepDialog implements
 
     private void validateButton()
     {
-
         try
         {
             String fullQueryStr = SparqlStepUtils.toFullQueryString(
@@ -238,20 +209,6 @@ public class SparqlStepDialog extends BaseStepDialog implements
             // update message
             wParserMessage
                     .setText(SparqlStepUtils.validateSparql(fullQueryStr));
-
-            // update output variable list
-            wList.removeAll();
-
-            java.util.List<ValueMetaInterface> outVars = SparqlStepUtils
-                    .generateOutputVars(wPrefixVar.getText(), fullQueryStr);
-            if (outVars != null)
-            {
-                for (int i = 0; i < outVars.size(); i++)
-                {
-                    ValueMetaInterface field = outVars.get(i);
-                    wList.add(field.getName() + " : " + field.getTypeDesc());
-                }
-            }
         }
         catch (Throwable e)
         {
@@ -266,7 +223,6 @@ public class SparqlStepDialog extends BaseStepDialog implements
     {
         wEndpointUri.addSelectionListener(lsDef);
         wDefaultGraph.addSelectionListener(lsDef);
-        wPrefixVar.addSelectionListener(lsDef);
     }
 
     @Override
@@ -396,7 +352,6 @@ public class SparqlStepDialog extends BaseStepDialog implements
 
     private void getData()
     {
-
         try
         {
             wStepname.selectAll();
@@ -428,9 +383,7 @@ public class SparqlStepDialog extends BaseStepDialog implements
                 wPrefixes.remove(0);
             }
 
-            String prefix = input.getVarPrefix();
-            if (prefix != null)
-                wPrefixVar.setText(prefix);
+            wOutputResult.setText(Const.NVL(input.getVarResult(), ""));
 
             validateButton();
         }
@@ -467,7 +420,7 @@ public class SparqlStepDialog extends BaseStepDialog implements
         {
         }
 
-        input.setVarPrefix(wPrefixVar.getText());
+        input.setVarResult(wOutputResult.getText());
 
         // Fecha janela
         dispose();
