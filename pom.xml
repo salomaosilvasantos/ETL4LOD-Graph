@@ -39,17 +39,6 @@
 			<id>pentaho-third-party</id>
 			<url>http://repo.pentaho.org/artifactory/third-party/</url>
 		</repository>
-		
-		<!-- Specific repository for Any23 dependencies without a dedicated repository. -->
-		<repository>
-			<id>any23-repository-external</id>
-			<url>http://any23.googlecode.com/svn/repo-ext</url>
-		</repository>
-		<!-- The Any23 modules repository. -->
-		<repository>
-			<id>any23-repository</id>
-			<url>http://any23.googlecode.com/svn/repo</url>
-		</repository>
 	
 		<!-- Run ${basedir}/libs/maven_install_libs.bat to install the local libraries 
 			into maven local repository -->
