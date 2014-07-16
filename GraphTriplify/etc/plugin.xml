@@ -1,10 +1,10 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
 <plugin
    id="GraphTriplifyPlugin"
-   iconfile="graphtriplify.png"
+   iconfile="iconGraphTriplify.png"
    description="Graph Triplify"
    tooltip="Experimental"
-   category="UFRJ_PPGI_GRECO"
+   category="LinkedDataBR - Graph"
    classname="br.ufrj.ppgi.greco.trans.step.graphtriplify.GraphTriplifyStepMeta">
    <libraries>
 		<library name="GraphTriplify.jar"/>
