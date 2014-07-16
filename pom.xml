@@ -39,6 +39,26 @@
 			<id>pentaho-third-party</id>
 			<url>http://repo.pentaho.org/artifactory/third-party/</url>
 		</repository>
+		
+		<!-- Rogers (07/2014) -->
+		<!-- O componente Any23 foi incorporado ao repositorio Maven Central. -->
+		<!-- Por isso, os 2 repositorios do googlecope nao sao mais necessarios. -->
+		
+		<!-- Specific repository for Any23 dependencies without a dedicated repository. -->
+		<!--
+		<repository>
+			<id>any23-repository-external</id>
+			<url>http://any23.googlecode.com/svn/repo-ext</url>
+		</repository>
+		-->
+		
+		<!-- The Any23 modules repository. -->
+		<!--
+		<repository>
+			<id>any23-repository</id>
+			<url>http://any23.googlecode.com/svn/repo</url>
+		</repository>
+		-->
 	
 		<!-- Run ${basedir}/libs/maven_install_libs.bat to install the local libraries 
 			into maven local repository -->
@@ -56,19 +76,20 @@
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>		
 			
 		<pdi.version>4.3.0-stable</pdi.version>
-		<pdi.home>D:/programas/pdi-ce-4.3.0-stable</pdi.home>
+		<pdi.home>C:\Users\Kelli\Desktop\data-integration4.1</pdi.home>
 		<pdi.plugin.dir>plugins/steps/${project.name}</pdi.plugin.dir>
 		<pdi.plugin.lib_name>${project.artifactId}</pdi.plugin.lib_name>
 	</properties>	
 
     <modules>
-		<module>SparqlEndpoint</module>
+		<module>GraphSparqlEndpoint</module>
 		<module>GraphTriplify</module>
 		<!-- Modulos ainda nao migrados -->
         <!-- <module>DataPropertyMapping</module> -->
         <!-- <module>ntriplegenerator</module> -->
         <!-- <module>ObjectPropertyMapping</module> -->
 		<!-- <module>SparqlUpdateOutput</module> -->
+		<module>GraphSemanticLevelMarker</module>
     </modules>
 
     <build>

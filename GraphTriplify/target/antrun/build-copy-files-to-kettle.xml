@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<project name="maven-antrun-" default="copy-files-to-kettle"  >
+<target name="copy-files-to-kettle">
+  <echo message="Copying C:\Users\Kelli\gitHub\ETL4LOD-Graph\GraphTriplify\etc\*.[png,xml,properties] to C:\Users\Kelli\Desktop\data-integration4.1/plugins/steps/GraphTriplify"/>
+  <copy todir="C:\Users\Kelli\Desktop\data-integration4.1/plugins/steps/GraphTriplify" overwrite="true">
+    <fileset dir="C:\Users\Kelli\gitHub\ETL4LOD-Graph\GraphTriplify/etc" includes="**/*.png,**/*.xml,**/*.properties"/>
+  </copy>
+  <echo message="Copying C:\Users\Kelli\gitHub\ETL4LOD-Graph\GraphTriplify\libs\*.jar to C:\Users\Kelli\Desktop\data-integration4.1/plugins/steps/GraphTriplify"/>
+  <copy todir="C:\Users\Kelli\Desktop\data-integration4.1/plugins/steps/GraphTriplify" overwrite="true">
+    <fileset dir="C:\Users\Kelli\gitHub\ETL4LOD-Graph\GraphTriplify/../libs" includes="**/*.jar"/>
+  </copy>
+  <echo message="Copying C:\Users\Kelli\gitHub\ETL4LOD-Graph\GraphTriplify\target\GraphTriplify-1.0.jar to C:\Users\Kelli\Desktop\data-integration4.1/plugins/steps/GraphTriplify"/>
+  <copy file="C:\Users\Kelli\gitHub\ETL4LOD-Graph\GraphTriplify\target/GraphTriplify-1.0.jar" tofile="C:\Users\Kelli\Desktop\data-integration4.1/plugins/steps/GraphTriplify/GraphTriplify.jar" overwrite="true"/>
+</target>
+</project>
