@@ -3,8 +3,6 @@ package br.ufrj.ppgi.greco.trans.step.graphSemanticLevelMarker;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
-import nu.xom.NodeFactory;
-
 import org.pentaho.di.core.exception.KettleException;
 import org.pentaho.di.core.exception.KettleStepException;
 import org.pentaho.di.core.row.RowDataUtil;
@@ -18,19 +16,15 @@ import org.pentaho.di.trans.step.StepInterface;
 import org.pentaho.di.trans.step.StepMeta;
 import org.pentaho.di.trans.step.StepMetaInterface;
 
-import com.hp.hpl.jena.graph.Graph;
-import com.hp.hpl.jena.graph.Node;
-import com.hp.hpl.jena.graph.Triple;
 import com.hp.hpl.jena.rdf.model.Model;
+import com.hp.hpl.jena.rdf.model.ModelCon;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.hp.hpl.jena.rdf.model.Property;
-import com.hp.hpl.jena.rdf.model.RDFNode;
 import com.hp.hpl.jena.rdf.model.ResIterator;
 import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.rdf.model.ResourceFactory;
 import com.hp.hpl.jena.rdf.model.Statement;
 import com.hp.hpl.jena.rdf.model.StmtIterator;
-import com.hp.hpl.jena.rdf.model.impl.StmtIteratorImpl;
 
 /**
  * Step GraphSemanticLevelMarker.
@@ -102,6 +96,32 @@ public class GraphSemanticLevelMarkerStep extends BaseStep implements StepInterf
         int indexGraph = rowMeta.indexOfValue(meta.getInputGraph());
         Object graph = (indexGraph >= 0) ? row[indexGraph] : null;
 
+        Model m = ModelFactory.createDefaultModel();
+        
+
+        
+        try {
+        	
+        	m = (Model) graph.getClass().getMethod("add").invoke(graph,graph);
+			 StmtIterator s = m.listStatements();
+			 
+		} catch (IllegalAccessException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IllegalArgumentException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (InvocationTargetException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (NoSuchMethodException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (SecurityException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+        
         // Set output row
         Method[] methods = graph.getClass().getMethods();
         boolean hasListStatements = false;
@@ -126,47 +146,16 @@ public class GraphSemanticLevelMarkerStep extends BaseStep implements StepInterf
             GraphSemanticLevelMarkerStepData data) throws KettleStepException
     {
         int numPutRows = 0;
-
-    	//TODO PESQUISAR COMO PASSAR UM MODEL DE UM STEP PARA OUTRO PARA NÃO USAR O REFLETION
-        // Testando usar reflexion
-        Object it = null;
-    	Model inputModel = ModelFactory.createDefaultModel();
-    	// Ainda não entendi a diferença de graph para model do jena
-    	//Graph inputGraph = null;
         try
         {
-			
-        	it = model.getClass().getMethod("listStatements").invoke(model);       	
-        	
-        	// Recreate the Graph from the previous step
-        	// TODO: AQUI A TRIPLA PODERIA SER A SAÍDA E NÃO CONVERTER PARA STRING E DEPOIS PARA TRIPLA NOVAMENTE!
-        	// PENSAR EM TODAS ESSAS IDAS E VINDAS DOS STEPS. avaliar o ng4j
-            Object[] outputRow = row;
-        	
-            if (it == null)
-                return 0;
+        		// Recreates de graph
+        		Model inputRecreatedGraph = recreateGraph (model);
 
-            //while (it.hasNext())
-            while ((Boolean) it.getClass().getMethod("hasNext").invoke(it))
-            {
-                //Statement stmt = it.next();
-            	// Nâo entendo porque não funciona. 
-                Object stmt = it.getClass().getMethod("next").invoke(it);
-            	
-                String subject = stmt.getClass().getMethod("getSubject").invoke(stmt).toString();
-                String predicate = stmt.getClass().getMethod("getPredicate").invoke(stmt).toString();
-                String object = stmt.getClass().getMethod("getObject").invoke(stmt).toString();
-                
-                Resource r = ResourceFactory.createResource(subject);
-                Property p = ResourceFactory.createProperty(predicate);
-                inputModel.add(r, p, object);
-
-                numPutRows++;
-            }       
-            	// Identify inputGraph Semantic Level        	
-	        	Statement stamp = markGraphSemanticLevel(inputModel);
+        		// Identify inputGraph Semantic Level        	
+	        	Statement stamp = markGraphSemanticLevel(inputRecreatedGraph);
 	
-	        	// Creates output with triple stamp
+	        	// Creates output with triple semantic level stamp
+                Object[] outputRow = row;
 	            int i = 0;
 	            outputRow = RowDataUtil.addValueData(outputRow, i++, stamp.getSubject().toString());
 	            outputRow = RowDataUtil.addValueData(outputRow, i++, stamp.getPredicate().toString());
@@ -174,28 +163,11 @@ public class GraphSemanticLevelMarkerStep extends BaseStep implements StepInterf
 			
 	            // Joga tripla no fluxo
 	            putRow(data.outputRowMeta, outputRow);
+	            
+	            numPutRows++;
 
         }
-        catch (IllegalAccessException e)
-        {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-        catch (IllegalArgumentException e)
-        {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-        catch (InvocationTargetException e)
-        {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-        catch (NoSuchMethodException e)
-        {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
+     
         catch (SecurityException e)
         {
             // TODO Auto-generated catch block
@@ -205,7 +177,49 @@ public class GraphSemanticLevelMarkerStep extends BaseStep implements StepInterf
         return numPutRows;
     }
     
-    Statement markGraphSemanticLevel (Model inputModel)
+    private Model recreateGraph(Object model) {
+
+    	// Recreate the Graph from the previous step
+    	Object it = null;
+    	Model inputModel = ModelFactory.createDefaultModel();
+        
+    	try {
+			it = model.getClass().getMethod("listStatements").invoke(model);
+	        while ((Boolean) it.getClass().getMethod("hasNext").invoke(it))
+	        {
+	            Object stmt = it.getClass().getMethod("next").invoke(it);
+	        	
+	            String subject = stmt.getClass().getMethod("getSubject").invoke(stmt).toString();
+	            String predicate = stmt.getClass().getMethod("getPredicate").invoke(stmt).toString();
+	            String object = stmt.getClass().getMethod("getObject").invoke(stmt).toString();
+	            
+	            Resource r = ResourceFactory.createResource(subject);
+	            Property p = ResourceFactory.createProperty(predicate);
+	            inputModel.add(r, p, object);
+
+	        }
+
+    	} catch (IllegalAccessException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IllegalArgumentException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (InvocationTargetException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (NoSuchMethodException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (SecurityException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}       	
+    	
+		return inputModel;
+	}
+
+	Statement markGraphSemanticLevel (Model inputModel)
     {
         // Variables initializations
     	ResIterator resourceSet = inputModel.listSubjects();
