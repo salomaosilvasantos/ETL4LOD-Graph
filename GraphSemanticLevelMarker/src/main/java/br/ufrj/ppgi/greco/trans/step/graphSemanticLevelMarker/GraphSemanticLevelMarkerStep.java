@@ -95,32 +95,8 @@ public class GraphSemanticLevelMarkerStep extends BaseStep implements StepInterf
         RowMetaInterface rowMeta = getInputRowMeta();
         int indexGraph = rowMeta.indexOfValue(meta.getInputGraph());
         Object graph = (indexGraph >= 0) ? row[indexGraph] : null;
-
-        Model m = ModelFactory.createDefaultModel();
         
-
-        
-        try {
-        	
-        	m = (Model) graph.getClass().getMethod("add").invoke(graph,graph);
-			 StmtIterator s = m.listStatements();
-			 
-		} catch (IllegalAccessException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IllegalArgumentException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (InvocationTargetException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (NoSuchMethodException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (SecurityException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+        //TODO pesquisar como instanciar um Model a partir do graph que é um ModelCom
         
         // Set output row
         Method[] methods = graph.getClass().getMethods();
