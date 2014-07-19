@@ -17,7 +17,6 @@ import org.pentaho.di.trans.step.StepMeta;
 import org.pentaho.di.trans.step.StepMetaInterface;
 
 import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.rdf.model.ModelCon;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.hp.hpl.jena.rdf.model.Property;
 import com.hp.hpl.jena.rdf.model.ResIterator;
@@ -124,13 +123,13 @@ public class GraphSemanticLevelMarkerStep extends BaseStep implements StepInterf
         int numPutRows = 0;
         try
         {
-        		// Recreates de graph
+        		// Recreates the graph sent by the previous step
         		Model inputRecreatedGraph = recreateGraph (model);
 
         		// Identify inputGraph Semantic Level        	
 	        	Statement stamp = markGraphSemanticLevel(inputRecreatedGraph);
 	
-	        	// Creates output with triple semantic level stamp
+	        	// Creates output with the semantic level stamp
                 Object[] outputRow = row;
 	            int i = 0;
 	            outputRow = RowDataUtil.addValueData(outputRow, i++, stamp.getSubject().toString());
@@ -155,7 +154,7 @@ public class GraphSemanticLevelMarkerStep extends BaseStep implements StepInterf
     
     private Model recreateGraph(Object model) {
 
-    	// Recreate the Graph from the previous step
+    	// Recreates a Model from a Object
     	Object it = null;
     	Model inputModel = ModelFactory.createDefaultModel();
         
@@ -195,7 +194,7 @@ public class GraphSemanticLevelMarkerStep extends BaseStep implements StepInterf
 		return inputModel;
 	}
 
-	Statement markGraphSemanticLevel (Model inputModel)
+	private Statement markGraphSemanticLevel (Model inputModel)
     {
         // Variables initializations
     	ResIterator resourceSet = inputModel.listSubjects();
@@ -212,8 +211,8 @@ public class GraphSemanticLevelMarkerStep extends BaseStep implements StepInterf
         {
         	Statement s = statementSet.nextStatement();
         	
-    	    // Objeto é um literal?
-        	//TODO: VERIFICAR SE O POSSO TESTAR DE O OBJECT É UM RDFNode DIRETO
+        	// TODO: investigar o melhor uso dos tipos Resource, Predicate, RDFNode para avaliar o nível semântico
+        	// Objeto é um literal?
             // sstamp:low
             if (s.getObject().isLiteral())
             	{

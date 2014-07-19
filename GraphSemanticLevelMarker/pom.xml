@@ -12,7 +12,16 @@
 		<version>1.0</version>
 	</parent>
 	
-	<developers>	
+	<developers>
+	
+		<developer>
+			<id>kelli.cordeiro</id>
+			<name>Kelli de Faria Cordeiro</name>
+			<email>kelli.faria@gmail.com</email>
+			<organization>UFRJ (PPGI/GRECO)</organization>
+			<organizationUrl>http://greco.ppgi.ufrj.br</organizationUrl>			
+		</developer>	
+			
 		<developer>
 			<id>rogers.mendonca</id>
 			<name>Rogers Reiche de Mendonca</name>
@@ -20,14 +29,7 @@
 			<organization>UFRJ (PPGI/GRECO)</organization>
 			<organizationUrl>http://greco.ppgi.ufrj.br</organizationUrl>			
 		</developer>
-		
-		<developer>
-			<id>kelli.cordeiro</id>
-			<name>Kelli de Faria Cordeiro</name>
-			<email>kelli.faria@gmail.com</email>
-			<organization>UFRJ (PPGI/GRECO)</organization>
-			<organizationUrl>http://greco.ppgi.ufrj.br</organizationUrl>			
-		</developer>		
+	
 	</developers>
 	
 	<dependencies>
