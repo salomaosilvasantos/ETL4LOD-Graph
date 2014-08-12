@@ -1,14 +1,20 @@
 ETL4LOD - Graph
 ===============
-Steps to process a RDF Graph.
 
-GraphSparqlQuery
+Steps of Pentaho Data Integration (Kettle) to process RDF Graph data.
+
+* GraphSparqlQuery
+
 Runs a sparql query against a endpoint and retrives a set of RDF graph data composed of triples. 
 
-GraphSemanticLevelMarker
+
+* GraphSemanticLevelMarker
+
 Reads a RDF graph data, evaluate its semantic expressivity level and creates a new triple stamping its level.
 
-GraphTriplify
+
+* GraphTriplify
+
 Read a RDF Graph and generates the corresponding triples.
 
 
