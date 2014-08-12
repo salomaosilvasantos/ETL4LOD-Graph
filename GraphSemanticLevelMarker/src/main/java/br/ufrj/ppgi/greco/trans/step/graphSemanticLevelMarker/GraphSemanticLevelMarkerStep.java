@@ -1,7 +1,16 @@
 package br.ufrj.ppgi.greco.trans.step.graphSemanticLevelMarker;
 
+import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+
+import bsh.EvalError;
+import bsh.Interpreter;
 
 import org.pentaho.di.core.exception.KettleException;
 import org.pentaho.di.core.exception.KettleStepException;
@@ -15,6 +24,11 @@ import org.pentaho.di.trans.step.StepDataInterface;
 import org.pentaho.di.trans.step.StepInterface;
 import org.pentaho.di.trans.step.StepMeta;
 import org.pentaho.di.trans.step.StepMetaInterface;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.w3c.dom.Document;
+import org.xml.sax.SAXException;
 
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
@@ -34,6 +48,9 @@ import com.hp.hpl.jena.rdf.model.StmtIterator;
  */
 public class GraphSemanticLevelMarkerStep extends BaseStep implements StepInterface
 {
+	
+    static Integer assessedValueLevel; 
+    
     public GraphSemanticLevelMarkerStep(StepMeta stepMeta,
             StepDataInterface stepDataInterface, int copyNr,
             TransMeta transMeta, Trans trans)
@@ -66,6 +83,9 @@ public class GraphSemanticLevelMarkerStep extends BaseStep implements StepInterf
     {
         GraphSemanticLevelMarkerStepMeta meta = (GraphSemanticLevelMarkerStepMeta) smi;
         GraphSemanticLevelMarkerStepData data = (GraphSemanticLevelMarkerStepData) sdi;
+        
+        String rulesFileName = meta.getRulesFilename();
+        String LOVFileName = meta.getBrowseFilename();
 
         // Obtem linha do fluxo de entrada e termina caso nao haja mais entrada
         Object[] row = getRow();
@@ -111,23 +131,24 @@ public class GraphSemanticLevelMarkerStep extends BaseStep implements StepInterf
 
         if (hasListStatements)
         {
-            tripleWriter(graph, null, data);
+            tripleWriter(graph, null, data, rulesFileName, LOVFileName);
         }
 
         return true;
     }
 
     private int tripleWriter(Object model, Object[] row,
-            GraphSemanticLevelMarkerStepData data) throws KettleStepException
+            GraphSemanticLevelMarkerStepData data, String rulesFileName, String LOVFileName) throws KettleStepException
     {
         int numPutRows = 0;
+
         try
         {
         		// Recreates the graph sent by the previous step
         		Model inputRecreatedGraph = recreateGraph (model);
 
         		// Identify inputGraph Semantic Level        	
-	        	Statement stamp = markGraphSemanticLevel(inputRecreatedGraph);
+	        	Statement stamp = markGraphSemanticLevel(inputRecreatedGraph, rulesFileName, LOVFileName);
 	
 	        	// Creates output with the semantic level stamp
                 Object[] outputRow = row;
@@ -194,7 +215,7 @@ public class GraphSemanticLevelMarkerStep extends BaseStep implements StepInterf
 		return inputModel;
 	}
 
-	private Statement markGraphSemanticLevel (Model inputModel)
+	private Statement markGraphSemanticLevel (Model inputModel, String rulesFileName, String LOVFileName)
     {
         // Variables initializations
     	ResIterator resourceSet = inputModel.listSubjects();
@@ -207,35 +228,183 @@ public class GraphSemanticLevelMarkerStep extends BaseStep implements StepInterf
 		
     	// Identify the levels of each statement on the inputGraph
 		StmtIterator statementSet = inputModel.listStatements();
-        while (statementSet.hasNext())
+		Integer valueLevel = 0;
+
+		while (statementSet.hasNext())
         {
         	Statement s = statementSet.nextStatement();
         	
         	// TODO: investigar o melhor uso dos tipos Resource, Predicate, RDFNode para avaliar o nível semântico
-        	// Objeto é um literal?
-            // sstamp:low
-            if (s.getObject().isLiteral())
-            	{
-        		outputGraphSemanticLevel = innerModel.createStatement(r, p, "sstamp:low");
-            	}
-            
-            	// Objeto ou Predicado está anotado com um prefixo?
-            	else if (s.getPredicate().toString().contains(":") || s.getPredicate().toString().contains(":") )
-            	{
-	            	// O prefixo representa uma ontologia?
-	    	        // sstamp:high
-	            	if (s.getPredicate().toString().contains("owl") || s.getPredicate().toString().contains("owl"))
-	        	           	{
-	            			outputGraphSemanticLevel = innerModel.createStatement(r, p, "sstamp:high");
-	    	            	} 
-	    	            else
-	    	           		{
-	    	            	// O prefixo representa um vocabulário?
-	    	            	// sstamp:medium
-	    	        		outputGraphSemanticLevel = innerModel.createStatement(r, p, "sstamp:medium");
-	    	           		}
-	    	     }
-         }
-         return outputGraphSemanticLevel;    	 
+        	String semanticLevel = assessSemanticLevel(s, rulesFileName, LOVFileName);
+
+        	if (valueLevel < assessedValueLevel)
+        	{
+	        	outputGraphSemanticLevel = innerModel.createStatement(r, p, semanticLevel);
+	            valueLevel = assessedValueLevel;   
+        	
+        	}
+        	
+        }
+        return outputGraphSemanticLevel;    	 
     }
+	
+	private static String assessSemanticLevel(Statement s, String rulesFileName, String LOVFileName)
+	{
+        Interpreter i = new Interpreter();
+        
+        String assessedDescriptionLevel ="NotIdentified";
+
+        
+        // Is Literal?
+        //if (s.getLiteral() != null)
+          //  assessedLevel="laiid:low"; 
+        	
+        String inputSubject = s.getSubject().toString();
+		String inputPredicate = s.getPredicate().toString();
+		String inputObject = s.getObject().toString();
+	       
+        try {
+        	//Open LOV xml file
+        	DocumentBuilderFactory docBuilderFactory2 = DocumentBuilderFactory.newInstance();
+            DocumentBuilder docBuilder2 = docBuilderFactory2.newDocumentBuilder();
+            Document doc2 = docBuilder2.parse (new File(LOVFileName.toString()));      	            
+			
+        	//Open SemanticLevelFrameWork files
+			DocumentBuilderFactory docBuilderFactory = DocumentBuilderFactory.newInstance();
+            DocumentBuilder docBuilder = docBuilderFactory.newDocumentBuilder();
+            Document doc = docBuilder.parse (new File(rulesFileName));
+            NodeList listOfFrames = doc.getElementsByTagName("Frame");          
+            int totalFrames = listOfFrames.getLength();
+            
+            // valida variaveis para o interpreter
+            i.set("inputSubject", inputSubject);
+			i.set("inputPredicate", inputPredicate);
+			i.set("inputObject", inputObject);
+			
+			// Get Prefix
+			String prefixo = "";
+			if(inputPredicate.contains(":")){
+				int index = inputPredicate.indexOf(":");
+				prefixo = inputPredicate.substring(0, index);
+			}	
+			
+			//verifica se é vocabulario ou ontologia
+			i.set("isVocabulary", isVocabulary(prefixo, doc2));
+			i.set("isOntology", isOntology(prefixo, doc2));
+			i.set("s", s);
+
+			//busca as regras
+            for(int k=0; k<totalFrames; k++){
+            	Node ruleFrameNode = listOfFrames.item(k);
+            	if(ruleFrameNode.getNodeType() == Node.ELEMENT_NODE)
+            	{
+                	Element ruleFrameElement = (Element)ruleFrameNode;
+                	NodeList ruleList = ruleFrameElement.getElementsByTagName("Rule");
+                	Element ruleElement = (Element)ruleList.item(0);
+                	NodeList textRList = ruleElement.getChildNodes();
+                	NodeList levelValueList = ruleFrameElement.getElementsByTagName("LevelValue");
+                    Element levelValueElement = (Element)levelValueList.item(0);
+                	NodeList levelDescriptionList = ruleFrameElement.getElementsByTagName("LevelDescription");
+                    Element levelDescriptionElement = (Element)levelDescriptionList.item(0);
+
+                    NodeList textLValueList = levelValueElement.getChildNodes();
+                    NodeList textLDescriptionList = levelDescriptionElement.getChildNodes();
+                                       
+                    //Rule Evaluation
+                    if((Boolean)i.eval(textRList.item(0).getNodeValue().trim()))
+                    {
+                    	assessedDescriptionLevel = textLDescriptionList.item(0).getNodeValue().trim();
+                    	assessedValueLevel = Integer.valueOf(textLValueList.item(0).getNodeValue());
+                    	
+                    	//TODO avaliar sair do for
+                    }       
+            	}		 
+            }
+            
+		} catch (ParserConfigurationException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (SAXException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (EvalError e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+    return assessedDescriptionLevel;
+}
+
+private static boolean isOntology(String prefix, Document doc) {
+	NodeList listOfResults = doc.getElementsByTagName("result");
+	int totalResults = listOfResults.getLength();
+	for(int k=0; k<totalResults; k++){
+		Node resultNode = listOfResults.item(k);
+		Element resultElement = (Element)resultNode;
+    	NodeList bindingList = resultElement.getElementsByTagName("binding");
+    	Element bindingPrefixElement = (Element)bindingList.item(0);
+    	NodeList literalList = bindingPrefixElement.getElementsByTagName("literal");
+    	Element literalElement = (Element)literalList.item(0);
+    	NodeList textLiList = literalElement.getChildNodes();
+    	if(prefix.equals(textLiList.item(0).getNodeValue().trim())){
+    		//busca se é ontologia no 'vocabDescription'
+    		Element bindingDescElement = (Element)bindingList.item(3);
+    		NodeList literalDescList = bindingDescElement.getElementsByTagName("literal");
+        	Element literalDescElement = (Element)literalDescList.item(0);
+        	NodeList textDescList = literalDescElement.getChildNodes();
+        	//busca se é ontologia no 'vocabTitle'
+    		Element bindingTitleElement = (Element)bindingList.item(2); 
+    		NodeList literalTitleList = bindingTitleElement.getElementsByTagName("literal");
+    		Element literalTitleElement = (Element)literalTitleList.item(0);
+    		NodeList textTitleList = literalTitleElement.getChildNodes();
+        	if(textDescList.item(0).getNodeValue().trim().toLowerCase().contains("ontology")){
+        		return true;
+        	}
+        	if(textTitleList.item(0).getNodeValue().trim().toLowerCase().contains("ontology")){
+        		return true;
+        	}
+    	}
+	}
+	return false;
+}
+
+
+
+private static boolean isVocabulary(String prefix, Document doc) {
+	NodeList listOfResults = doc.getElementsByTagName("result");
+	int totalResults = listOfResults.getLength();
+	for(int k=0; k<totalResults; k++){
+		Node resultNode = listOfResults.item(k);
+		Element resultElement = (Element)resultNode;
+    	NodeList bindingList = resultElement.getElementsByTagName("binding");
+    	Element bindingPrefixElement = (Element)bindingList.item(0);
+    	NodeList literalList = bindingPrefixElement.getElementsByTagName("literal");
+    	Element literalElement = (Element)literalList.item(0);
+    	NodeList textLiList = literalElement.getChildNodes();
+    	if(prefix.equals(textLiList.item(0).getNodeValue().trim())){
+    		//busca se é vocabulario no 'vocabDescription'
+    		Element bindingDescElement = (Element)bindingList.item(3); 
+    		NodeList literalDescList = bindingDescElement.getElementsByTagName("literal");
+        	Element literalDescElement = (Element)literalDescList.item(0);
+        	NodeList textDescList = literalDescElement.getChildNodes();
+        	//busca se é vocabulario no 'vocabTitle'
+        	Element bindingTitleElement = (Element)bindingList.item(2); 
+    		NodeList literalTitleList = bindingTitleElement.getElementsByTagName("literal");
+    		Element literalTitleElement = (Element)literalTitleList.item(0);
+    		NodeList textTitleList = literalTitleElement.getChildNodes();
+        	if(textDescList.item(0).getNodeValue().trim().toLowerCase().contains("vocabulary")){
+        		return true;
+        	}
+        	if(textTitleList.item(0).getNodeValue().trim().toLowerCase().contains("vocabulary")){
+        		return true;
+        	}
+    	}
+	}
+	return false;
+	}
+
+		
 }

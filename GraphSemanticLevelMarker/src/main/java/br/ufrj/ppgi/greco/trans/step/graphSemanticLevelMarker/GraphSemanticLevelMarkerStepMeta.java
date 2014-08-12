@@ -41,17 +41,22 @@ public class GraphSemanticLevelMarkerStepMeta extends BaseStepMeta implements
 {
     public enum Field
     {
-        INPUT_GRAPH, OUTPUT_SUBJECT, OUTPUT_PREDICATE, OUTPUT_OBJECT
+        INPUT_GRAPH, OUTPUT_SUBJECT, OUTPUT_PREDICATE, OUTPUT_OBJECT,
+        INPUT_BROWSE_FILE_NAME,
+        INPUT_RULES_FILE_NAME
     }
 
     // Campos Step - Input
     private String inputGraph;
+    public String browseFilename;
+    public String rulesFilename;
 
     // Campos Step - Output
     private String outputSubject;
     private String outputPredicate;
     private String outputObject;
-
+    
+    
     public GraphSemanticLevelMarkerStepMeta()
     {
         setDefault();
@@ -66,6 +71,26 @@ public class GraphSemanticLevelMarkerStepMeta extends BaseStepMeta implements
         CheckResultInterface ok = new CheckResult(CheckResult.TYPE_RESULT_OK,
                 "", stepMeta);
         remarks.add(ok);
+        if (browseFilename==null || browseFilename.length()==0 )
+		{
+        	ok = new CheckResult(CheckResult.TYPE_RESULT_ERROR, "No files can be found to read.", stepMeta);
+			remarks.add(ok);
+		}
+		else
+		{
+			ok = new CheckResult(CheckResult.TYPE_RESULT_OK, "Name file are defined.", stepMeta);
+			remarks.add(ok);
+		}
+        if (rulesFilename==null || rulesFilename.length()==0 )
+		{
+        	ok = new CheckResult(CheckResult.TYPE_RESULT_ERROR, "No files can be found to read.", stepMeta);
+			remarks.add(ok);
+		}
+		else
+		{
+			ok = new CheckResult(CheckResult.TYPE_RESULT_OK, "Rule File are defined.", stepMeta);
+			remarks.add(ok);
+		}
     }
 
     @Override
@@ -102,6 +127,8 @@ public class GraphSemanticLevelMarkerStepMeta extends BaseStepMeta implements
                 Field.OUTPUT_PREDICATE.name());
         outputObject = XMLHandler.getTagValue(stepDomNode,
                 Field.OUTPUT_OBJECT.name());
+        browseFilename = XMLHandler.getTagValue(stepDomNode, Field.INPUT_BROWSE_FILE_NAME.name());
+        rulesFilename = XMLHandler.getTagValue(stepDomNode, Field.INPUT_RULES_FILE_NAME.name());
     }
 
     // Gerar XML para salvar um .ktr
@@ -117,7 +144,10 @@ public class GraphSemanticLevelMarkerStepMeta extends BaseStepMeta implements
                 outputPredicate));
         xml.append(XMLHandler.addTagValue(Field.OUTPUT_OBJECT.name(),
                 outputObject));
+        xml.append(XMLHandler.addTagValue(Field.INPUT_BROWSE_FILE_NAME.name(), browseFilename));
+        xml.append(XMLHandler.addTagValue(Field.INPUT_RULES_FILE_NAME.name(), rulesFilename));
         return xml.toString();
+        
     }
 
     // Carregar campos a partir do repositorio
@@ -134,6 +164,8 @@ public class GraphSemanticLevelMarkerStepMeta extends BaseStepMeta implements
                 Field.OUTPUT_PREDICATE.name());
         outputObject = repository.getStepAttributeString(stepIdInRepository,
                 Field.OUTPUT_OBJECT.name());
+        browseFilename = repository.getStepAttributeString(stepIdInRepository, Field.INPUT_BROWSE_FILE_NAME.name());
+        rulesFilename = repository.getStepAttributeString(stepIdInRepository, Field.INPUT_RULES_FILE_NAME.name());
     }
 
     // Persistir campos no repositorio
@@ -149,6 +181,10 @@ public class GraphSemanticLevelMarkerStepMeta extends BaseStepMeta implements
                 Field.OUTPUT_PREDICATE.name(), outputPredicate);
         repository.saveStepAttribute(idOfTransformation, idOfStep,
                 Field.OUTPUT_OBJECT.name(), outputObject);
+        repository.saveStepAttribute(idOfTransformation, idOfStep,
+                Field.INPUT_BROWSE_FILE_NAME.name(), browseFilename);
+        repository.saveStepAttribute(idOfTransformation, idOfStep,
+                Field.INPUT_RULES_FILE_NAME.name(), rulesFilename);
     }
 
     // Inicializacoes default
@@ -159,6 +195,8 @@ public class GraphSemanticLevelMarkerStepMeta extends BaseStepMeta implements
         outputSubject = "subject";
         outputPredicate = "predicate";
         outputObject = "object";
+        browseFilename = "";
+        rulesFilename = "";
     }
 
     /**
@@ -226,5 +264,24 @@ public class GraphSemanticLevelMarkerStepMeta extends BaseStepMeta implements
     public void setOutputObject(String outputObject)
     {
         this.outputObject = outputObject;
+    }
+    public String getBrowseFilename()
+    {
+    	return browseFilename;
+    }
+    
+    public void setBrowseFilename(String browseFilename)
+    {
+    	this.browseFilename = browseFilename;
+    }
+    
+    public String getRulesFilename()
+    {
+    	return rulesFilename;
+    }
+    
+    public void setRulesFilename(String rulesFilename)
+    {
+    	this.rulesFilename = rulesFilename;
     }
 }

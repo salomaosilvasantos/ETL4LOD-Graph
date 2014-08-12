@@ -3,7 +3,7 @@
    id="GraphSemanticLevelMarkerPlugin"
    iconfile="iconGraphSemanticLevelMarker.png"
    description="Graph Semantic Level Marker"
-   tooltip="Reads a RDF graph data, evaluate its semantic expressivity level and creates a new triple stamping its level."
+   tooltip="Reads a RDF Graph, evaluate its semantic expressivity level and creates a new triple stamping its level."
    category="LinkedDataBR - Graph"
    classname="br.ufrj.ppgi.greco.trans.step.graphSemanticLevelMarker.GraphSemanticLevelMarkerStepMeta">
    <libraries>

@@ -16,6 +16,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Event;
+import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Listener;
@@ -52,6 +53,21 @@ public class GraphSemanticLevelMarkerStepDialog extends BaseStepDialog implement
     // Campos Step - Input
     private Group wInputGroup;
     private ComboVar wInputGraph;
+    
+    private Label wlBrowse;
+    private Label wlRules;
+
+    private Button wbBrowse;
+    private Text wBrowse;
+    private Button wbRules;
+    private Text wRules;
+    
+    private FormData fdlBrowse;
+    private FormData fdbBrowse;
+    private FormData fdBrowse;
+    private FormData fdlRules;
+    private FormData fdbRules;
+    private FormData fdRules;
 
     // Campos Step - Output
     private Group wOutputGroup;
@@ -91,7 +107,7 @@ public class GraphSemanticLevelMarkerStepDialog extends BaseStepDialog implement
         wOutputSubject = swthlp.appendTextVarRow(wOutputGroup, wOutputGroup, BaseMessages.getString(PKG, "GraphSemanticLevelMarkerStep.SubjectField.Label"), defModListener);
         wOutputPredicate = swthlp.appendTextVarRow(wOutputGroup, wOutputSubject, BaseMessages.getString(PKG, "GraphSemanticLevelMarkerStep.PredicateField.Label"), defModListener);
         wOutputObject = swthlp.appendTextVarRow(wOutputGroup, wOutputPredicate, BaseMessages.getString(PKG, "GraphSemanticLevelMarkerStep.ObjectField.Label"), defModListener);
-        
+
         return wOutputGroup;
     }
 
@@ -155,14 +171,67 @@ public class GraphSemanticLevelMarkerStepDialog extends BaseStepDialog implement
         // Chama metodo que adiciona os widgets especificos da janela
         lastControl = buildContents(lastControl, lsMod);
 
+        //Botões para busca de arquivo 
+        wlBrowse=new Label(shell, SWT.RIGHT);
+		wlBrowse.setText("Linked Open Vocabulary file:");
+ 		props.setLook(wlBrowse);
+		fdlBrowse=new FormData();
+		fdlBrowse.left = new FormAttachment(0, 0);
+		fdlBrowse.top  = new FormAttachment(wOutputGroup, margin);
+		fdlBrowse.right= new FormAttachment(middle, -margin);
+		wlBrowse.setLayoutData(fdlBrowse);
+        
+        wbBrowse=new Button(shell, SWT.PUSH| SWT.CENTER);
+ 		props.setLook(wbBrowse);
+		wbBrowse.setText(BaseMessages.getString(PKG, "GraphSemanticLevelMarkerStep.Btn.Browse"));
+		fdbBrowse=new FormData();
+		fdbBrowse.right= new FormAttachment(100, 0);
+		fdbBrowse.top  = new FormAttachment(wOutputGroup, margin);
+		wbBrowse.setLayoutData(fdbBrowse);
+		
+		wBrowse=new Text(shell, SWT.SINGLE | SWT.LEFT | SWT.BORDER);
+ 		props.setLook(wBrowse);
+		wBrowse.addModifyListener(lsMod);
+		fdBrowse=new FormData();
+		fdBrowse.left = new FormAttachment(middle, 0);
+		fdBrowse.right= new FormAttachment(wbBrowse, -margin);
+		fdBrowse.top  = new FormAttachment(wOutputGroup, margin);
+		wBrowse.setLayoutData(fdBrowse);
+		
+		wlRules=new Label(shell, SWT.RIGHT);
+		wlRules.setText("Semantic Framework File:");
+ 		props.setLook(wlRules);
+		fdlRules=new FormData();
+		fdlRules.left = new FormAttachment(0, 0);
+		fdlRules.top  = new FormAttachment(wBrowse, margin);
+		fdlRules.right= new FormAttachment(middle, -margin);
+		wlRules.setLayoutData(fdlRules);
+		
+		wbRules=new Button(shell, SWT.PUSH| SWT.CENTER);
+ 		props.setLook(wbRules);
+		wbRules.setText(BaseMessages.getString(PKG, "GraphSemanticLevelMarkerStep.Btn.Browse"));
+		fdbRules=new FormData();
+		fdbRules.right= new FormAttachment(100, 0);
+		fdbRules.top  = new FormAttachment(wBrowse, margin);
+		wbRules.setLayoutData(fdbRules);
+		
+		wRules=new Text(shell, SWT.SINGLE | SWT.LEFT | SWT.BORDER);
+ 		props.setLook(wRules);
+		wRules.addModifyListener(lsMod);
+		fdRules=new FormData();
+		fdRules.left = new FormAttachment(middle, 0);
+		fdRules.right= new FormAttachment(wbRules, -margin);
+		fdRules.top  = new FormAttachment(wBrowse, margin);
+		wRules.setLayoutData(fdRules);
+
         // Bottom buttons
         wOK = new Button(shell, SWT.PUSH);
         wOK.setText(BaseMessages.getString(PKG, "GraphSemanticLevelMarkerStep.Btn.OK")); //$NON-NLS-1$
         wCancel = new Button(shell, SWT.PUSH);
         wCancel.setText(BaseMessages.getString(PKG, "GraphSemanticLevelMarkerStep.Btn.Cancel")); //$NON-NLS-1$
         setButtonPositions(new Button[]
-        { wOK, wCancel }, margin, lastControl);
-
+        { wOK, wCancel }, margin, wbRules);
+        
         // Add listeners
         lsCancel = new Listener()
         {
@@ -179,6 +248,63 @@ public class GraphSemanticLevelMarkerStepDialog extends BaseStepDialog implement
             }
         };
 
+        
+        wBrowse.addModifyListener(new ModifyListener()
+  		{
+  			public void modifyText(ModifyEvent arg0)
+  			{
+  				wBrowse.setToolTipText(transMeta.environmentSubstitute(wBrowse.getText()));
+  			}
+  		});
+          
+          wbBrowse.addSelectionListener
+  		(
+  			new SelectionAdapter()
+  			{
+  				public void widgetSelected(SelectionEvent e) 
+  				{
+  					FileDialog dialog = new FileDialog(shell, SWT.OPEN);
+  					dialog.setFilterExtensions(new String[] {"*.xml;*.XML", "*"});
+  					if (wBrowse.getText()!=null)
+  					{
+  						dialog.setFileName(wBrowse.getText());
+  					}
+  						
+  					dialog.setFilterNames(new String[] {"XML files", "All files"});
+  						
+  					if (dialog.open()!=null)
+  					{
+  						String str = dialog.getFilterPath()+System.getProperty("file.separator")+dialog.getFileName();
+  						wBrowse.setText(str);
+  					}
+  				}
+  			}
+  		);
+          
+          wbRules.addSelectionListener
+  		(
+  			new SelectionAdapter()
+  			{
+  				public void widgetSelected(SelectionEvent e) 
+  				{
+  					FileDialog dialog = new FileDialog(shell, SWT.OPEN);
+  					dialog.setFilterExtensions(new String[] {"*.xml;*.XML", "*"});
+  					if (wRules.getText()!=null)
+  					{
+  						dialog.setFileName(wRules.getText());
+  					}
+  						
+  					dialog.setFilterNames(new String[] {"XML files", "All files"});
+  						
+  					if (dialog.open()!=null)
+  					{
+  						String str = dialog.getFilterPath()+System.getProperty("file.separator")+dialog.getFileName();
+  						wRules.setText(str);
+  					}
+  				}
+  			}
+  		);
+        
         wCancel.addListener(SWT.Selection, lsCancel);
         wOK.addListener(SWT.Selection, lsOK);
 
@@ -240,6 +366,10 @@ public class GraphSemanticLevelMarkerStepDialog extends BaseStepDialog implement
         wOutputSubject.setText(Const.NVL(input.getOutputSubject(), ""));
         wOutputPredicate.setText(Const.NVL(input.getOutputPredicate(), ""));
         wOutputObject.setText(Const.NVL(input.getOutputObject(), ""));
+        
+        wBrowse.setText(input.getBrowseFilename());
+        wRules.setText(input.getRulesFilename());
+
     }
 
     protected void cancel()
@@ -261,6 +391,9 @@ public class GraphSemanticLevelMarkerStepDialog extends BaseStepDialog implement
         input.setOutputSubject(wOutputSubject.getText());
         input.setOutputPredicate(wOutputPredicate.getText());
         input.setOutputObject(wOutputObject.getText());
+        
+        input.setBrowseFilename(wBrowse.getText());
+        input.setRulesFilename(wRules.getText());
 
         // Fecha janela
         dispose();
