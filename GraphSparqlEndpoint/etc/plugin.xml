@@ -3,7 +3,7 @@
    id="GraphSparqlEndpointPlugin"
    iconfile="iconGraphSparqlendpoint.png"
    description="Graph Sparql Query"
-   tooltip="Experimental"
+   tooltip="Execute a DESCRIBE or a CONSTRUCT command on SPARQL 1.1 Endpoint and returns SubjectItem RDF Graphs."
    category="LinkedDataBR - Graph"
    classname="br.ufrj.ppgi.greco.lodbr.plugin.graphsparql.GraphSparqlStepMeta">
    <libraries>

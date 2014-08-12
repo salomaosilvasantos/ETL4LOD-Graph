@@ -30,6 +30,7 @@ import com.hp.hpl.jena.rdf.model.ResIterator;
 import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.rdf.model.Selector;
 import com.hp.hpl.jena.rdf.model.SimpleSelector;
+import com.hp.hpl.jena.rdf.model.StmtIterator;
 
 /**
  * Adaptacoes: <br />
@@ -294,9 +295,30 @@ public class GraphSparqlStep extends BaseStep implements StepInterface
 
                 case Query.QueryTypeDescribe:
                     model = qexec.execDescribe();
+                    ResIterator resourceSetD = model.listSubjects();
+                    int countD = 0;
+                    while (resourceSetD.hasNext())
+                    {
+                    	Resource resource = resourceSetD.nextResource();
+                    	// gets a subgraph
+                    	Model subjectItemGraph = createSubjectItemGraph(resource, model);
+                    	
+                    	// send a subGraph to the next step                    	
+                    	incrementLinesInput();
+                    	putRow(data.outputRowMeta, RowDataUtil.addValueData(row,
+                    			data.inputRowSize, subjectItemGraph));
+                    	countD++;
+                    }
+                    if (countD==0)
+                    {
                     incrementLinesInput();
                     putRow(data.outputRowMeta, RowDataUtil.addValueData(row,
                             data.inputRowSize, model));
+                    }
+
+                    //incrementLinesInput();
+                    //putRow(data.outputRowMeta, RowDataUtil.addValueData(row,
+                      //      data.inputRowSize, model));
                     break;
 
                 case Query.QueryTypeSelect:
@@ -324,6 +346,8 @@ public class GraphSparqlStep extends BaseStep implements StepInterface
 	    Model subjectItemGraph = null;
 	    Selector s = new SimpleSelector(resource, (Property) null, (RDFNode) null);
 	    subjectItemGraph = model.query(s);
+	    StmtIterator i = model.listStatements(s);
+	    
 	    return subjectItemGraph;
 	    }
 }

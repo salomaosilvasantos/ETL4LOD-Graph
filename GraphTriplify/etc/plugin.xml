@@ -3,7 +3,7 @@
    id="GraphTriplifyPlugin"
    iconfile="iconGraphTriplify.png"
    description="Graph Triplify"
-   tooltip="Experimental"
+   tooltip="Read a RDF Graph and generates the corresponding triples."
    category="LinkedDataBR - Graph"
    classname="br.ufrj.ppgi.greco.trans.step.graphtriplify.GraphTriplifyStepMeta">
    <libraries>
