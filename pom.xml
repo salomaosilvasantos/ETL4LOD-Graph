@@ -34,11 +34,19 @@
 			<id>pentaho-repo</id>
 			<url>http://repo.pentaho.org/artifactory/pentaho/</url>
 		</repository>
+		
 		<!-- Pentaho repository (third party). -->
 		<repository>
 			<id>pentaho-third-party</id>
 			<url>http://repo.pentaho.org/artifactory/third-party/</url>
 		</repository>
+		
+		<!-- Run ${basedir}/libs/maven_install_libs.bat to install the local libraries 
+			into maven local repository -->
+		<repository>
+			<id>local-repository</id>
+			<url>file://${basedir}/libs</url>
+		</repository>		
 		
 		<!-- Rogers (07/2014) -->
 		<!-- O componente Any23 foi incorporado ao repositorio Maven Central. -->
@@ -59,13 +67,6 @@
 			<url>http://any23.googlecode.com/svn/repo</url>
 		</repository>
 		-->
-	
-		<!-- Run ${basedir}/libs/maven_install_libs.bat to install the local libraries 
-			into maven local repository -->
-		<repository>
-			<id>local-repository</id>
-			<url>file://${basedir}/libs</url>
-		</repository>
 	</repositories>
 	
 	<properties>
@@ -75,7 +76,7 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>		
 			
-		<pdi.version>5.0.5</pdi.version>
+		<pdi.version>4.3.0-stable</pdi.version>
 		<pdi.home>d:/programas/pdi-ce-4.3.0-stable</pdi.home>
 		<pdi.plugin.dir>plugins/steps/${project.name}</pdi.plugin.dir>
 		<pdi.plugin.lib_name>${project.artifactId}</pdi.plugin.lib_name>
@@ -175,6 +176,12 @@
 			<groupId>org.apache.jena</groupId>
 			<artifactId>jena-core</artifactId>
 			<version>2.12.0</version>
+		</dependency>
+		
+		<dependency>
+			<groupId>de.fuberlin.wiwiss.silk</groupId>
+			<artifactId>silk-core</artifactId>
+			<version>2.5</version>
 		</dependency>
 		
 		<!-- local dependencies -->
