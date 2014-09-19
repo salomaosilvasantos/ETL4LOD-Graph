@@ -3,7 +3,7 @@ ETL4LOD - Graph
 
 Steps of Pentaho Data Integration (Kettle) to process RDF Graph data.
 
-* GraphSparqlQuery
+* GraphSparqlEndpoint
 
 Runs a sparql query against a endpoint and retrives a set of RDF graph data composed of triples. 
 
