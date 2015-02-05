@@ -29,16 +29,11 @@
 	</developers>
 
 	<repositories>
-		<!-- Pentaho repository. -->
+	<!-- Pentaho repository. -->
+
 		<repository>
-			<id>pentaho-repo</id>
-			<url>http://repo.pentaho.org/artifactory/pentaho/</url>
-		</repository>
-		
-		<!-- Pentaho repository (third party). -->
-		<repository>
-			<id>pentaho-third-party</id>
-			<url>http://repo.pentaho.org/artifactory/third-party/</url>
+			<id>pentaho-releases</id>
+			<url>http://repository.pentaho.org/artifactory/repo/</url>
 		</repository>
 		
 		<!-- Run ${basedir}/libs/maven_install_libs.bat to install the local libraries 
@@ -48,26 +43,7 @@
 			<url>file://${basedir}/libs</url>
 		</repository>		
 		
-		<!-- Rogers (07/2014) -->
-		<!-- O componente Any23 foi incorporado ao repositorio Maven Central. -->
-		<!-- Por isso, os 2 repositorios do googlecope nao sao mais necessarios. -->
-		
-		<!-- Specific repository for Any23 dependencies without a dedicated repository. -->
-		<!--
-		<repository>
-			<id>any23-repository-external</id>
-			<url>http://any23.googlecode.com/svn/repo-ext</url>
-		</repository>
-		-->
-		
-		<!-- The Any23 modules repository. -->
-		<!--
-		<repository>
-			<id>any23-repository</id>
-			<url>http://any23.googlecode.com/svn/repo</url>
-		</repository>
-		-->
-	</repositories>
+		</repositories>
 	
 	<properties>
 		<maven.compiler.source>1.6</maven.compiler.source>
@@ -76,8 +52,8 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>		
 			
-		<pdi.version>4.3.0-stable</pdi.version>
-		<pdi.home>d:/programas/pdi-ce-4.3.0-stable</pdi.home>
+		<pdi.version>5.2.0.0-209</pdi.version>
+		<pdi.home>C:/programas/pdi-ce-5.2.0.0-209/data-integration</pdi.home>
 		<pdi.plugin.dir>plugins/steps/${project.name}</pdi.plugin.dir>
 		<pdi.plugin.lib_name>${project.artifactId}</pdi.plugin.lib_name>
 	</properties>	
@@ -117,48 +93,57 @@
 	  
 	<dependencies>
 		
-		<!-- Kelli (07/2014) -->
-		<!-- Kettle dependency updates to Pentaho 5.1.0 -->
+		<!-- Salomão Santos (02/2014) -->
+		<!-- Kettle dependency updates to Pentaho 5.2.0.0-209 -->
 		<!-- Kettle dependencies (start) -->
+
+			
 		<dependency>
-				<groupId>pentaho-kettle</groupId>
-				<artifactId>kettle-core</artifactId>
-				<version>${pdi.version}</version>
-			<scope>provided</scope>
+			<groupId>pentaho-kettle</groupId>
+			<artifactId>kettle-core</artifactId>
+			<version>${pdi.version}</version>
 		</dependency>
 
 		<dependency>
-		  <groupId>pentaho-kettle</groupId>
-		  <artifactId>kettle-db</artifactId>
-		  <version>4.4.3.3</version>
+			<groupId>pentaho-kettle</groupId>
+			<artifactId>kettle-db</artifactId>
+			<version>4.4.3.3</version>
 		</dependency>
 
 		<dependency>
 			<groupId>pentaho-kettle</groupId>
 			<artifactId>kettle-dbdialog</artifactId>
 			<version>${pdi.version}</version>
-			<scope>provided</scope>
+			
 		</dependency>
 
 		<dependency>
 			<groupId>pentaho-kettle</groupId>
 			<artifactId>kettle-engine</artifactId>
 			<version>${pdi.version}</version>
-			<scope>provided</scope>
+			
 		</dependency>
 
 		<dependency>
-		  <groupId>pentaho-kettle</groupId>
-		  <artifactId>kettle-test</artifactId>
-		  <version>4.4.3.3</version>
+			<groupId>pentaho-kettle</groupId>
+			<artifactId>kettle-test</artifactId>
+			<version>4.4.3.1</version>
 		</dependency>
 
 		<dependency>
 			<groupId>pentaho-kettle</groupId>
 			<artifactId>kettle-ui-swt</artifactId>
 			<version>${pdi.version}</version>
-			<scope>provided</scope>
 		</dependency>
+		<dependency>
+			<groupId>pentaho-kettle</groupId>
+			<artifactId>swt</artifactId>
+			<version>1.0</version>
+		</dependency>
+		
+		
+		<!-- Kettle dependencies (end) -->
+		
 		
 		<dependency>
 			<groupId>bsh</groupId>
