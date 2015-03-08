@@ -52,8 +52,8 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>		
 			
-		<pdi.version>5.2.0.0-209</pdi.version>
-		<pdi.home>C:/programas/pdi-ce-5.2.0.0-209/data-integration</pdi.home>
+		<pdi.version>5.3.0.0-213</pdi.version>
+		<pdi.home>/home/salomao/Documentos/pdi-ce-5.3.0.0-213/data-integration</pdi.home>
 		<pdi.plugin.dir>plugins/steps/${project.name}</pdi.plugin.dir>
 		<pdi.plugin.lib_name>${project.artifactId}</pdi.plugin.lib_name>
 	</properties>	
@@ -93,8 +93,8 @@
 	  
 	<dependencies>
 		
-		<!-- Salomão Santos (02/2014) -->
-		<!-- Kettle dependency updates to Pentaho 5.2.0.0-209 -->
+		<!-- Salomão Santos (03/2015) -->
+		<!-- Kettle dependency updates to Pentaho 5.3.0.0-213 -->
 		<!-- Kettle dependencies (start) -->
 
 			
@@ -135,12 +135,6 @@
 			<artifactId>kettle-ui-swt</artifactId>
 			<version>${pdi.version}</version>
 		</dependency>
-		<dependency>
-			<groupId>pentaho-kettle</groupId>
-			<artifactId>swt</artifactId>
-			<version>1.0</version>
-		</dependency>
-		
 		
 		<!-- Kettle dependencies (end) -->
 		
